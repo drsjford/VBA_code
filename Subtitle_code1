@@ -1,0 +1,74 @@
+Sub AddTimeToAll()
+
+'change all the times in the whole document
+
+Dim time2add As String
+Dim sec2add As Double
+Dim add_remove As Integer
+
+'choose how much time to add and convert that to decimal time
+
+repeat_add_remove:
+
+add_remove = InputBox("Enter 1 to add time, and -1 to remove time", 1)
+If (add_remove) ^ 2 <> 1 Then
+    MsgBox ("Please enter 1 or -1")
+    GoTo repeat_add_remove
+End If
+
+repeat_time2add:
+
+time2add = InputBox("Put in your time as hh:mm:ss.sss")
+
+If Len(time2add) <> 12 Then
+    MsgBox ("Please check your time format")
+    GoTo repeat_time2add
+End If
+
+sec2add = time2decimal(time2add)
+
+
+'loop through the lines to find -->
+
+Dim i As Integer
+Dim ctstartdec As Double
+Dim ctenddec As Double
+Dim ctstarttext As String
+Dim ctendtext As String
+
+Dim doc As Document
+Set doc = ActiveDocument
+
+t = doc.Sentences.Count
+
+MsgBox (t)
+
+
+For i = 1 To t
+
+
+    'Identify sentence with -->
+    If InStr(10, doc.Sentences(i), "-->", vbTextCompare) > 10 Then
+        
+        'extract the cue start time string and convert to a decimal (see function)
+        ctstartdec = time2decimal(Trim((Left(doc.Sentences(i), (InStr(5, doc.Sentences(i), "-->") - 1)))))
+        'extract the cue end time string and convert to a decimal (see function)
+        ctenddec = time2decimal(Trim((Right(doc.Sentences(i), (Len(doc.Sentences(i)) - (InStr(5, doc.Sentences(i), "-->") + 3))))))
+        'add or remove time from the two cue times
+        ctstartdec = ctstartdec + (sec2add * add_remove)
+        ctenddec = ctenddec + (sec2add * add_remove)
+        
+        'convert the two new cue times to the required hh:mm:ss.sss string format
+        ctstarttext = decimal2time(ctstartdec)
+        ctendtext = decimal2time(ctenddec)
+        'replace the existing string with the new times.
+        doc.Sentences(i).Text = (ctstarttext + " --> " + ctendtext + vbNewLine)
+        
+        
+    End If
+
+Next i
+
+
+
+End Sub
